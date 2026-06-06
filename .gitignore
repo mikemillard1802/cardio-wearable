@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local
+*.key
+*.pem
+*.crt
+
+# Large files
+*.log
+*.bin
+*.pkl
+*.pt
+*.safetensors
+data/
+datasets/
+*.csv
+*.parquet
