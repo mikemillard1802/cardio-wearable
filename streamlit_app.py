@@ -7,8 +7,8 @@ URL Usage: https://cardio-wearable.streamlit.app/?patient=JohnDoe&device=watch12
 """
 import streamlit as st
 import random
-import time
 from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
 
 # Page config
 st.set_page_config(
@@ -46,6 +46,7 @@ if "heart_rate" not in st.session_state:
     st.session_state.bp_dia = 80
     st.session_state.glucose = 95
     st.session_state.last_update = datetime.now()
+    st.session_state.test_mode = False
 
 def generate_vitals():
     """Generate realistic simulated vital signs"""
@@ -57,12 +58,14 @@ def generate_vitals():
     st.session_state.glucose = random.randint(85, 110)
     st.session_state.last_update = datetime.now()
 
-# Auto-refresh using native Streamlit (no extra deps)
+# Auto-refresh (registered early)
 auto_refresh = st.sidebar.checkbox("Auto-refresh (3s)", value=True)
 if auto_refresh:
-    time.sleep(3)
-    generate_vitals()
-    st.rerun()
+    count = st_autorefresh(interval=3000, key="autorefresh")
+    if not st.session_state.get("test_mode", False):
+        generate_vitals()
+    else:
+        st.session_state.test_mode = False
 
 # Main Display
 st.header("❤️ Vital Signs")
@@ -106,8 +109,11 @@ hr = st.session_state.heart_rate
 spo2 = st.session_state.spo2
 has_alert = False
 
-if hr > 100 or hr < 60:
-    st.error(f"🔴 Heart Rate Alert: {hr} BPM")
+if hr > 100:
+    st.error(f"🔴 Tachycardia: {hr} BPM")
+    has_alert = True
+elif hr < 60:
+    st.error(f"🔴 Bradycardia: {hr} BPM")
     has_alert = True
 
 if spo2 < 95:
@@ -130,6 +136,7 @@ with col_btn2:
     if st.button("⚠️ Test Alert"):
         st.session_state.heart_rate = 115
         st.session_state.spo2 = 93
+        st.session_state.test_mode = True
         st.rerun()
 
 # Footer
