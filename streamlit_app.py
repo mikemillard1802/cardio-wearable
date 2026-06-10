@@ -46,6 +46,7 @@ if "heart_rate" not in st.session_state:
     st.session_state.bp_dia = 80
     st.session_state.glucose = 95
     st.session_state.last_update = datetime.now()
+    st.session_state.test_mode = False
 
 def generate_vitals():
     """Generate realistic simulated vital signs"""
@@ -61,7 +62,10 @@ def generate_vitals():
 auto_refresh = st.sidebar.checkbox("Auto-refresh (3s)", value=True)
 if auto_refresh:
     count = st_autorefresh(interval=3000, key="autorefresh")
-    generate_vitals()
+    if not st.session_state.get("test_mode", False):
+        generate_vitals()
+    else:
+        st.session_state.test_mode = False
 
 # Main Display
 st.header("❤️ Vital Signs")
@@ -105,8 +109,11 @@ hr = st.session_state.heart_rate
 spo2 = st.session_state.spo2
 has_alert = False
 
-if hr > 100 or hr < 60:
-    st.error(f"🔴 Heart Rate Alert: {hr} BPM")
+if hr > 100:
+    st.error(f"🔴 Tachycardia: {hr} BPM")
+    has_alert = True
+elif hr < 60:
+    st.error(f"🔴 Bradycardia: {hr} BPM")
     has_alert = True
 
 if spo2 < 95:
@@ -129,6 +136,7 @@ with col_btn2:
     if st.button("⚠️ Test Alert"):
         st.session_state.heart_rate = 115
         st.session_state.spo2 = 93
+        st.session_state.test_mode = True
         st.rerun()
 
 # Footer
